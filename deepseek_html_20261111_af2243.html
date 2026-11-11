@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Разработка сайтов | Maxim.DEV</title>
+  <meta name="description" content="Создаю современные сайты для малого бизнеса. Быстро, адаптивно, под ключ.">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2275%22 font-family=%22Arial%22 font-size=%2280%22 fill=%22%23ccff00%22 text-anchor=%22middle%22>⚡</text></svg>">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Unbounded:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --bg-card: #1a1a1a;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --accent: #ccff00; /* Кислотно-зеленый */
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      cursor: none; /* СКРЫВАЕМ СТАНДАРТНЫЙ КУРСОР */
+    }
+
+    /* 1. ТЕКСТУРА ШУМА НА ФОНЕ */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* КАСТОМНЫЙ КУРСОР */
+    .cursor-dot, .cursor-outline {
+      position: fixed;
+      top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .cursor-dot { width: 8px; height: 8px; background-color: var(--accent); }
+    .cursor-outline {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(204, 255, 0, 0.5);
+      transition: width 0.2s, height 0.2s, background-color 0.2s;
+    }
+    .cursor-outline.hovered {
+      width: 60px; height: 60px;
+      background-color: rgba(204, 255, 0, 0.1);
+      border-color: var(--accent);
+    }
+
+    @media (pointer: coarse) {
+      body { cursor: auto; }
+      .cursor-dot, .cursor-outline { display: none; }
+    }
+
+    /* ЭФФЕКТ ФОНА, СЛЕДЯЩИЙ ЗА МЫШКОЙ */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: radial-gradient(circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(204, 255, 0, 0.08), transparent 80%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    h1, h2, h3, .logo {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 600;
+    }
+    
+    .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s ease-out; }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+
+    /* Шапка */
+    header {
+      padding: 30px 5%;
+      display: flex; justify-content: space-between; align-items: center;
+      position: fixed; width: 100%; top: 0; z-index: 100;
+      backdrop-filter: blur(10px); background: rgba(15, 15, 15, 0.8);
+    }
+
+    .logo { font-size: 20px; color: var(--text); letter-spacing: 1px; text-decoration: none; cursor: none; }
+    .logo span { color: var(--accent); }
+    
+    .nav-links { display: flex; gap: 30px; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none; font-size: 14px; transition: 0.3s; font-weight: 400; cursor: none;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* Главный экран */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; padding: 0 5%; position: relative;
+    }
+    
+    .hero h1 { font-size: clamp(36px, 6vw, 72px); line-height: 1.1; margin-bottom: 20px; max-width: 100%; }
+    
+    .accent-text { color: var(--accent); white-space: nowrap; }
+    .cursor-blink {
+      display: inline-block; width: 4px; height: 1em;
+      background-color: var(--accent); vertical-align: bottom;
+      animation: blink 1s step-end infinite; margin-left: 5px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .hero p { font-size: 20px; color: var(--text-muted); max-width: 600px; margin-bottom: 40px; }
+    
+    .btn {
+      display: inline-block; background: var(--accent); color: #000;
+      padding: 18px 40px; text-decoration: none; font-size: 16px; font-weight: 600;
+      border-radius: 50px; transition: 0.3s; align-self: flex-start;
+      border: 2px solid var(--accent); cursor: none;
+    }
+    .btn:hover { background: transparent; color: var(--accent); transform: translateY(-3px); }
+
+    /* Секции */
+    .section { padding: 120px 5%; max-width: 1400px; margin: 0 auto; }
+    .section-title { font-size: 48px; margin-bottom: 60px; }
+    .section-title span { color: var(--accent); }
+
+    /* Фильтр Портфолио */
+    .filter-buttons { display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+    .filter-btn {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-muted);
+      padding: 10px 25px; border-radius: 30px; cursor: none; transition: 0.3s;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+    }
+    .filter-btn:hover, .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .projects-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+      gap: 40px; 
+    }
+    .project-card { 
+      background: var(--bg-card); border-radius: 20px; overflow: hidden; 
+      border: 1px solid rgba(255,255,255,0.05); transition: 0.4s; cursor: none;
+    }
+    .project-card:hover { transform: translateY(-10px); border-color: var(--accent); }
+    
+    /* ЭФФЕКТ НАВЕДЕНИЯ НА КАРТИНКУ ПРОЕКТА */
+    .project-img-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: block; 
+    }
+    .project-img { 
+      width: 100%; height: 350px; object-fit: cover; 
+      display: block; transition: transform 0.5s ease;
+    }
+    .project-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 15, 15, 0.7); 
+      display: flex; justify-content: center; align-items: center;
+      opacity: 0; transition: opacity 0.3s ease;
+      font-family: 'Unbounded', sans-serif; color: var(--accent); font-size: 18px; font-weight: 600;
+    }
+    .project-card:hover .project-img { transform: scale(1.05); }
+    .project-card:hover .project-overlay { opacity: 1; }
+
+    .project-info { padding: 30px; }
+    .project-info h3 { font-size: 24px; margin-bottom: 10px; }
+    .project-info p { color: var(--text-muted); font-size: 15px; margin-bottom: 20px; }
+    .project-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+    .tag { 
+      background: rgba(204, 255, 0, 0.1); color: var(--accent); 
+      padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+
+    /* Как я работаю */
+    .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .process-card {
+      background: var(--bg-card); padding: 40px 30px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05); position: relative; transition: 0.3s;
+    }
+    .process-card:hover { border-color: rgba(204, 255, 0, 0.3); transform: translateY(-5px); }
+    .process-num {
+      font-family: 'Unbounded', sans-serif; font-size: 48px; font-weight: 800;
+      color: rgba(204, 255, 0, 0.15); position: absolute; top: 20px; right: 20px;
+    }
+    .process-card h3 { font-size: 20px; margin-bottom: 15px; position: relative; z-index: 2; }
+    .process-card p { color: var(--text-muted); font-size: 14px; position: relative; z-index: 2; }
+
+    /* Что я делаю (Услуги) */
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+    .service-card { background: var(--bg-card); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+    .service-card h3 { font-size: 22px; margin-bottom: 15px; color: var(--accent); }
+    .service-card p { color: var(--text-muted); font-size: 15px; }
+
+    /* FAQ */
+    .faq-container { max-width: 800px; margin: 0 auto; }
+    .faq-item {
+      background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 15px; margin-bottom: 15px; overflow: hidden; transition: 0.3s;
+    }
+    .faq-item:hover { border-color: rgba(204, 255, 0, 0.3); }
+    .faq-question {
+      width: 100%; padding: 25px 30px; background: transparent; border: none;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600;
+      text-align: left; display: flex; justify-content: space-between; align-items: center;
+      cursor: none; transition: 0.3s;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-icon { font-size: 24px; color: var(--accent); transition: transform 0.4s ease; font-weight: 300; }
+    .faq-answer {
+      max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out;
+      padding: 0 30px; color: var(--text-muted); font-size: 16px;
+    }
+    .faq-item.active { border-color: var(--accent); background: #1c1c1c; }
+    .faq-item.active .faq-icon { transform: rotate(45deg); }
+    .faq-item.active .faq-answer { padding-bottom: 25px; }
+
+    /* Контакты и Форма */
+    .contact-section {
+      text-align: center; padding: 150px 5%; background: linear-gradient(to bottom, var(--bg), #1a1a1a);
+    }
+    .contact-section h2 { font-size: 56px; margin-bottom: 20px; }
+    .contact-section p { color: var(--text-muted); font-size: 18px; margin-bottom: 40px; }
+    
+    .form-container {
+      max-width: 500px; margin: 0 auto; background: var(--bg-card);
+      padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); 
+      text-align: left; transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    
+    .form-container:focus-within {
+      border-color: rgba(204, 255, 0, 0.5);
+      box-shadow: 0 0 30px rgba(204, 255, 0, 0.15);
+    }
+
+    .input-group { margin-bottom: 20px; }
+    .input-group input, .input-group textarea {
+      width: 100%; padding: 18px; background: var(--bg); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; 
+      transition: border-color 0.3s; cursor: none;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      outline: none; border-color: var(--accent);
+    }
+    .input-group input::placeholder, .input-group textarea::placeholder { color: var(--text-muted); }
+
+    footer { text-align: center; padding: 30px; color: var(--text-muted); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+    @media (max-width: 992px) {
+      .projects-grid { grid-template-columns: 1fr; }
+      .process-grid { grid-template-columns: 1fr 1fr; }
+      .services-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .contact-section h2 { font-size: 40px; }
+      .form-container { padding: 20px; }
+    }
+    @media (max-width: 600px) {
+      .process-grid { grid-template-columns: 1fr; }
+      .faq-question { padding: 20px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- КАСТОМНЫЙ КУРСОР -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-outline"></div>
+
+  <header>
+    <a href="#" class="logo">Maxim<span>.DEV</span></a>
+    <div class="nav-links">
+      <a href="#projects">Работы</a>
+      <a href="#process">Как я работаю</a>
+      <a href="#services">Услуги</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Связаться</a>
+    </div>
+  </header>
+
+  <!-- Главный экран -->
+  <section class="hero reveal">
+    <h1>
+      Создаю <span id="typewriter" class="accent-text"></span><span class="cursor-blink"></span><br>
+      которые продают.
+    </h1>
+    <p>Привет, я Максим. Делаю современные, быстрые и адаптивные решения для малого бизнеса. Без воды, с душой и вниманием к деталям.</p>
+    <a href="#contact" class="btn">Обсудить проект</a>
+  </section>
+
+  <!-- Портфолио с Фильтром -->
+  <section class="section reveal" id="projects">
+    <h2 class="section-title">Мои <span>работы</span></h2>
+    
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">Все</button>
+      <button class="filter-btn" data-filter="web">Сайты</button>
+      <button class="filter-btn" data-filter="bot">Telegram-боты</button>
+    </div>
+
+    <div class="projects-grid">
+      
+      <!-- Проект 1: Вкус Востока -->
+      <div class="project-card" data-category="web">
+        <a href="https://vkus-vostoka-tomilino.netlify.app/" target="_blank" class="project-img-wrapper">
+          <img src="project1.jpg" class="project-img" alt="Сайт кафе Вкус Востока">
+          <div class="project-overlay">Смотреть кейс →</div>
+        </a>
+        <div class="project-info">
+          <h3>Вкус Востока</h3>
+          <p>Одностраничный сайт для кафе восточной кухни. Включает полное меню, блок доставки и форму обратной связи.</p>
+          <div class="project-tags">
+            <span class="tag">HTML/CSS</span>
+            <span class="tag">Адаптив</span>
+            <span class="tag">Форма заявок</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Проект 2: Beauty Club -->
+      <div class="project-card" data-category="web">
+        <a href="https://beauty-coworking-lubertsy.netlify.app/" target="_blank" class="project-img-wrapper">
+          <img src="project2.jpg" class="project-img" alt="Сайт салона красоты Beauty Club">
+          <div class="project-overlay">Смотреть кейс →</div>
+        </a>
+        <div class="project-info">
+          <h3>Beauty Club</h3>
+          <p>Премиальный лендинг для бьюти-коворкинга. Сложная структура вкладок, прайс-лист, отзывы и интеграция записи.</p>
+          <div class="project-tags">
+            <span class="tag">Дизайн</span>
+            <span class="tag">Вкладки</span>
+            <span class="tag">SEO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Проект 3: Telegram-бот -->
+      <div class="project-card" data-category="bot">
+        <!-- ТУТ ИСПРАВЛЕНА ССЫЛКА НА БОТА -->
+        <a href="https://t.me/portfoliotomilinobot" target="_blank" class="project-img-wrapper">
+          <img src="project3.jpg" class="project-img" alt="Telegram-бот визитка">
+          <div class="project-overlay">Открыть бота →</div>
+        </a>
+        <div class="project-info">
+          <h3>Telegram-бот визитка</h3>
+          <p>Интерактивный бот-портфолио на Python (pyTelegramBotAPI). Включает меню, ссылки на проекты и прайс-лист.</p>
+          <div class="project-tags">
+            <span class="tag">Python</span>
+            <span class="tag">Telegram API</span>
+            <span class="tag">Cloud Deploy</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Как я работаю -->
+  <section class="section reveal" id="process">
+    <h2 class="section-title">Как я <span>работаю</span></h2>
+    <div class="process-grid">
+      <div class="process-card">
+        <div class="process-num">01</div>
+        <h3>Заявка</h3>
+        <p>Вы оставляете заявку на сайте или пишете мне в мессенджер.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-num">02</div>
+        <h3>Обсуждение</h3>
+        <p>Созваниваемся, обсуждаем задачи, я предлагаю решение и называю цену.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-num">03</div>
+        <h3>Разработка</h3>
+        <p>Верстаю сайт, показываю вам макет, вносим необходимые правки.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-num">04</div>
+        <h3>Запуск</h3>
+        <p>Передаю готовый проект, настраиваю хостинг и подключение заявок.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Услуги -->
+  <section class="section reveal" id="services">
+    <h2 class="section-title">Что я <span>делаю</span></h2>
+    
+    <div class="services-grid">
+      <div class="service-card">
+        <h3>Landing Page</h3>
+        <p>Одностраничные сайты-визитки для услуг, кафе и локального бизнеса. Идеально для быстрого старта.</p>
+      </div>
+      <div class="service-card">
+        <h3>Telegram-боты</h3>
+        <p>Разработка и запуск ботов для автоматизации продаж, рассылок или записи клиентов. Работают 24/7.</p>
+      </div>
+      <div class="service-card">
+        <h3>Под ключ</h3>
+        <p>Настройка хостинга, покупка домена, подключение форм заявок и базовое SEO. Вам не придется ни в чем разбираться.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section reveal" id="faq">
+    <h2 class="section-title">Частые <span>вопросы</span></h2>
+    
+    <div class="faq-container">
+      
+      <div class="faq-item">
+        <button class="faq-question">
+          Сколько стоит сайт?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>Стоимость зависит от сложности проекта и количества страниц. Простой одностраничный сайт-визитка (как в моем портфолио) стоит от 5 000 рублей. Точную цену я называю после обсуждения ваших задач.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Сколько времени занимает разработка?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>Обычно на создание качественного лендинга уходит от 2 до 5 дней, в зависимости от того, как быстро вы предоставите материалы (фото, тексты) и как быстро мы согласуем правки. Я не затягиваю сроки.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Что нужно для старта работы?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>От вас нужна идея (или готовый пример, который нравится), ваши фотографии, логотип (если есть) и текстовое описание услуг. Если текстов нет — я помогу их структурировать и написать.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Вы даете гарантию на сайт?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>Да, я бесплатно исправляю любые технические ошибки на сайте в течение 30 дней после сдачи проекта. Если сайт перестанет открываться или сломается форма заявок — я всё починю.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Контакты и Форма -->
+  <section class="contact-section reveal" id="contact">
+    <h2>Готовы начать?</h2>
+    <p>Оставьте свои контакты, и я свяжусь с вами, чтобы обсудить ваш проект.</p>
+    
+    <div class="form-container">
+      <form name="contact" method="POST" data-netlify="true" id="contact-form">
+        <input type="hidden" name="form-name" value="contact" />
+        
+        <div class="input-group">
+          <input type="text" name="name" required placeholder="Ваше имя или название бизнеса">
+        </div>
+        
+        <div class="input-group">
+          <input type="text" name="contact_info" required placeholder="Ссылка на ВК / Telegram или номер телефона">
+        </div>
+        
+        <div class="input-group">
+          <textarea name="message" rows="3" placeholder="Какой сайт вам нужен? (необязательно)"></textarea>
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%;">Отправить заявку</button>
+
+        <div id="form-success" style="display: none; text-align: center; margin-top: 20px; color: var(--accent);">
+          <h3>Спасибо! Заявка получена.</h3>
+          <p>Я свяжусь с вами в ближайшее время.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Максим. Веб-разработка в Люберцах и Москве.
+  </footer>
+
+  <script>
+    // 1. Плавное появление
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('active');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+    // 2. Кастомный курсор
+    const dot = document.querySelector('.cursor-dot');
+    const outline = document.querySelector('.cursor-outline');
+
+    document.addEventListener('mousemove', (e) => {
+      document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+      document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+
+      dot.style.left = e.clientX + 'px';
+      dot.style.top = e.clientY + 'px';
+      outline.style.left = e.clientX + 'px';
+      outline.style.top = e.clientY + 'px';
+    });
+
+    const hoverElements = document.querySelectorAll('a, button, input, textarea, .faq-question, .project-img-wrapper');
+    hoverElements.forEach(el => {
+      el.addEventListener('mouseenter', () => outline.classList.add('hovered'));
+      el.addEventListener('mouseleave', () => outline.classList.remove('hovered'));
+    });
+
+    // 3. Печатная машинка
+    const words = ["сайты", "лендинги", "ботов", "магазины"];
+    let i = 0;
+    let timer;
+
+    function typingEffect() {
+      let word = words[i].split("");
+      var loopTyping = function() {
+        if (word.length > 0) {
+          document.getElementById('typewriter').innerHTML += word.shift();
+        } else {
+          setTimeout(deletingEffect, 2000);
+          return false;
+        }
+        timer = setTimeout(loopTyping, 100);
+      };
+      loopTyping();
+    }
+
+    function deletingEffect() {
+      let word = words[i].split("");
+      var loopDeleting = function() {
+        if (word.length > 0) {
+          word.pop();
+          document.getElementById('typewriter').innerHTML = word.join("");
+        } else {
+          if (words.length > (i + 1)) { i++; } else { i = 0; }
+          typingEffect();
+          return false;
+        }
+        timer = setTimeout(loopDeleting, 50);
+      };
+      loopDeleting();
+    }
+    setTimeout(typingEffect, 500);
+
+    // 4. Фильтр проектов
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const filter = btn.getAttribute('data-filter');
+        
+        projectCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'block';
+            setTimeout(() => card.style.opacity = '1', 50);
+          } else {
+            card.style.opacity = '0';
+            setTimeout(() => card.style.display = 'none', 300);
+          }
+        });
+      });
+    });
+
+    // 5. FAQ (аккордеон)
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      const answer = item.querySelector('.faq-answer');
+
+      question.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+        
+        faqItems.forEach(otherItem => {
+          otherItem.classList.remove('active');
+          otherItem.querySelector('.faq-answer').style.maxHeight = null;
+        });
+
+        if (!isActive) {
+          item.classList.add('active');
+          answer.style.maxHeight = answer.scrollHeight + "px";
+        }
+      });
+    });
+
+    // 6. Отправка формы
+    const form = document.getElementById('contact-form');
+    const successMessage = document.getElementById('form-success');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString(),
+      })
+      .then(() => {
+        Array.from(form.querySelectorAll('.input-group, button[type="submit"]')).forEach(el => el.style.display = 'none');
+        successMessage.style.display = 'block';
+      })
+      .catch(error => alert('Ошибка: ' + error));
+    });
+  </script>
+
+</body>
+</html>
